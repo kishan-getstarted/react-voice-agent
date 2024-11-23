@@ -2,9 +2,9 @@
   command = """
     tsc && \
     cp -r static lib && \
+    cp -r package.json lib && \
     cd lib && \
     touch yarn.lock && \
-    cp -r package.json lib && \
     yarn && \
     node index.js
   """
