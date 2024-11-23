@@ -1,13 +1,13 @@
 [build]
-  command = """
-    tsc && \
-    cp -r static lib && \
-    cd lib && \
-    touch yarn.lock && \
-    yarn && \
-    node index.js
-  """
-  publish = "lib"
+  command = "npm run build"
+  publish = "static"
+  functions = "netlify/functions"
 
-[build.environment]
-  NODE_VERSION = "18" # You can adjust this version as needed
+[dev]
+  command = "npm run dev"
+  port = 3000
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

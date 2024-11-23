@@ -634,6 +634,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@netlify/functions@npm:^2.8.2":
+  version: 2.8.2
+  resolution: "@netlify/functions@npm:2.8.2"
+  dependencies:
+    "@netlify/serverless-functions-api": 1.26.1
+  checksum: a7317aaec5150d66e8b6c8b14381da0982d6ba2939fd70b424184e926aa05a402c4ab1056d4f4989351e56914d5dfd9260965f53a103b799daa045bd1a0d77df
+  languageName: node
+  linkType: hard
+
+"@netlify/node-cookies@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@netlify/node-cookies@npm:0.1.0"
+  checksum: 7258bebeafac3bb208f62a7a44e20ffe85f0d201bd71662de8fbf78bfbfd4eb2187f14e50249a8f090cd71e99058cd32972c1d10f5c8a74a511fe350cf968a01
+  languageName: node
+  linkType: hard
+
+"@netlify/serverless-functions-api@npm:1.26.1":
+  version: 1.26.1
+  resolution: "@netlify/serverless-functions-api@npm:1.26.1"
+  dependencies:
+    "@netlify/node-cookies": ^0.1.0
+    urlpattern-polyfill: 8.0.2
+  checksum: 1acf07a9dc0872aea711fa6d64b15e3157725f716285d02827c35e8f94e3bec2b75e7372d69e90ce3c9125e844f71f7848c9ae9468425aff7c3b434dba0dc3be
+  languageName: node
+  linkType: hard
+
 "@npmcli/agent@npm:^2.0.0":
   version: 2.2.2
   resolution: "@npmcli/agent@npm:2.2.2"
@@ -1811,6 +1837,7 @@ __metadata:
     "@hono/node-ws": ^1.0.4
     "@langchain/community": ^0.3.4
     "@langchain/core": ^0.3.7
+    "@netlify/functions": ^2.8.2
     "@types/node": ^20.11.17
     "@types/ws": ^8.5.12
     dotenv: ^16.4.5
@@ -2053,6 +2080,13 @@ __metadata:
   dependencies:
     imurmurhash: ^0.1.4
   checksum: 0884b58365af59f89739e6f71e3feacb5b1b41f2df2d842d0757933620e6de08eff347d27e9d499b43c40476cbaf7988638d3acb2ffbcb9d35fd035591adfd15
+  languageName: node
+  linkType: hard
+
+"urlpattern-polyfill@npm:8.0.2":
+  version: 8.0.2
+  resolution: "urlpattern-polyfill@npm:8.0.2"
+  checksum: d2cc0905a613c77e330c426e8697ee522dd9640eda79ac51160a0f6350e103f09b8c327623880989f8ba7325e8d95267b745aa280fdcc2aead80b023e16bd09d
   languageName: node
   linkType: hard
 

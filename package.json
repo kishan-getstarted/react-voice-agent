@@ -1,13 +1,17 @@
 {
   "name": "react-voice-agent",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev:local": "tsx watch src/index.ts",
+    "dev": "netlify dev",
+    "build": "tsc && cp -r static/ dist/",
+    "deploy": "netlify deploy --prod"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.1",
     "@hono/node-ws": "^1.0.4",
     "@langchain/community": "^0.3.4",
     "@langchain/core": "^0.3.7",
+    "@netlify/functions": "^2.8.2",
     "dotenv": "^16.4.5",
     "hono": "^4.6.3",
     "typescript": "^5.7.2",
