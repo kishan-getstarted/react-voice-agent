@@ -1,13 +1,28 @@
 [build]
-  command = "npm run build"
-  publish = "static"
   functions = "netlify/functions"
-
-[dev]
-  command = "npm run dev"
-  port = 3000
+  publish = "static"
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/.netlify/functions/server"
   status = 200
+
+[[redirects]]
+  from = "/ws/*"
+  to = "/.netlify/functions/websocket"
+  status = 200
+  force = true
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."websocket"]
+  included_files = []
+
+[dev]
+  framework = "#custom"
+  command = "npm run dev"
+  targetPort = 8888
+  port = 8888
+  publish = "static"
+  autoLaunch = true
