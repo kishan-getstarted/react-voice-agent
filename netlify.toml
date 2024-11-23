@@ -1,0 +1,13 @@
+[build]
+  command = """
+    tsc && \
+    cp -r static lib && \
+    cd lib && \
+    touch yarn.lock && \
+    yarn && \
+    node index.js
+  """
+  publish = "lib"
+
+[build.environment]
+  NODE_VERSION = "18" # You can adjust this version as needed
