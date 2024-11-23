@@ -5,22 +5,28 @@
     cp -r package.json lib && \
     cd lib && \
     touch yarn.lock && \
-    yarn && \
-    node index.js
+    yarn
   """
   publish = "lib"
 
 [build.environment]
   NODE_VERSION = "18"
 
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/server"
-  status = 200
+# Production process type
+[build.processing]
+  skip_processing = true
 
-[dev]
-  command = "npm run dev" # or your development command
-  port = 3000
-  publish = "lib"
-  targetPort = 3000
-  framework = "#custom"
+# Configure the web process
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Add process management
+[build.lifecycle]
+  onBuild = "pm2 start lib/index.js --name app"
+
+# Port configuration
+[[redirects]]
+  force = true
+  from = "/*"
+  status = 200
+  to = "http://localhost:3000/:splat"
