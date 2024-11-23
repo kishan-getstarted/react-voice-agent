@@ -116,8 +116,7 @@
             try {
 
                 // handle output -> speaker stuff
-                const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/.netlify/functions/websocket`);
-
+                const ws = new WebSocket("ws://localhost:3000/ws");
 
                 const audioPlayer = new Player();
                 audioPlayer.init(24000);

@@ -1,31 +1,26 @@
 [build]
-  functions = "netlify/functions"
-  publish = "static"
+  command = """
+    tsc && \
+    cp -r static lib && \
+    cd lib && \
+    touch yarn.lock && \
+    cp -r package.json lib && \
+    yarn && \
+    node index.js
+  """
+  publish = "lib"
 
-[[redirects]]
-  from = "/static/*"
-  to = "/.netlify/functions/server"
-  status = 200
-
-[[redirects]]
-  from = "/ws"
-  to = "/.netlify/functions/websocket"
-  status = 200
-  force = true
+[build.environment]
+  NODE_VERSION = "18"
 
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/server"
   status = 200
 
-[functions]
-  node_bundler = "esbuild"
-  included_files = ["static/**/*"]
-
 [dev]
+  command = "npm run dev" # or your development command
+  port = 3000
+  publish = "lib"
+  targetPort = 3000
   framework = "#custom"
-  command = "npm run dev"
-  targetPort = 8888
-  port = 8888
-  publish = "static"
-  autoLaunch = true
