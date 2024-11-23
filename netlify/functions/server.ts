@@ -18,31 +18,61 @@ const contentTypes: ContentTypeMap = {
   gif: 'image/gif',
   svg: 'image/svg+xml',
   ico: 'image/x-icon',
-  txt: 'text/plain'
+  txt: 'text/plain',
+  wasm: 'application/wasm',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  ogg: 'audio/ogg'
+}
+
+const isBinaryFileType = (ext: string): boolean => {
+  const binaryTypes = ['wasm', 'mp3', 'wav', 'ogg', 'png', 'jpg', 'jpeg', 'gif', 'ico']
+  return binaryTypes.includes(ext)
 }
 
 export const handler: Handler = async (event, context) => {
-  // Serve static files
-  if (event.path === '/') {
-    const indexPath = join(__dirname, '../../static/index.html')
-    const content = fs.readFileSync(indexPath, 'utf8')
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/html',
-      },
-      body: content,
+  try {
+    // Serve index for root path
+    if (event.path === '/') {
+      const indexPath = join(__dirname, './../../static/index.html')
+      const content = fs.readFileSync(indexPath, 'utf8')
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'text/html',
+        },
+        body: content,
+      }
     }
-  }
 
-  // Handle static assets
-  if (event.path.startsWith('/static/')) {
-    const filePath = join(__dirname, '../..', event.path)
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf8')
-      const ext = filePath.split('.').pop() || 'txt'
-      const contentType = contentTypes[ext] || 'text/plain'
+    // Handle static files (including those in /static/)
+    let filePath = event.path
+    if (event.path.startsWith('/static/')) {
+      filePath = event.path.slice(7) // Remove '/static/' prefix
+    }
+    
+    // Ensure the file path is within the static directory
+    const fullPath = join(__dirname, '../../static', filePath)
+    
+    if (fs.existsSync(fullPath)) {
+      const ext = fullPath.split('.').pop() || 'txt'
+      const contentType = contentTypes[ext] || 'application/octet-stream'
       
+      // Handle binary files
+      if (isBinaryFileType(ext)) {
+        const content = fs.readFileSync(fullPath)
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': contentType,
+          },
+          body: content.toString('base64'),
+          isBase64Encoded: true
+        }
+      }
+      
+      // Handle text files
+      const content = fs.readFileSync(fullPath, 'utf8')
       return {
         statusCode: 200,
         headers: {
@@ -51,10 +81,23 @@ export const handler: Handler = async (event, context) => {
         body: content,
       }
     }
-  }
 
-  return {
-    statusCode: 404,
-    body: 'Not Found',
+    // File not found
+    return {
+      statusCode: 404,
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: 'File not found'
+    }
+  } catch (error) {
+    console.error('Error serving file:', error)
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: 'Internal server error'
+    }
   }
 }

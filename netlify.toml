@@ -3,21 +3,24 @@
   publish = "static"
 
 [[redirects]]
-  from = "/*"
+  from = "/static/*"
   to = "/.netlify/functions/server"
   status = 200
 
 [[redirects]]
-  from = "/ws/*"
+  from = "/ws"
   to = "/.netlify/functions/websocket"
   status = 200
   force = true
 
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
+
 [functions]
   node_bundler = "esbuild"
-
-[functions."websocket"]
-  included_files = []
+  included_files = ["static/**/*"]
 
 [dev]
   framework = "#custom"
