@@ -14,6 +14,14 @@
             margin: 0;
             background-color: #f0f0f0;
         }
+        #prompt {
+            width: 500px;
+            height: 50px;
+            font-size: 18px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+        }
         #toggleAudio {
             font-size: 18px;
             padding: 10px 20px;
@@ -24,13 +32,20 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
+        #toggleAudio:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
         #toggleAudio:hover {
             background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <button id="toggleAudio">Start Audio</button>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 20px;">
+        <input type="text" id="prompt" placeholder="Enter Prompt Here">
+        <button id="toggleAudio">Start Audio</button>
+    </div>
 
     <script>
         // Create audio context
@@ -117,10 +132,16 @@
 
                 // handle output -> speaker stuff
                 const ws = new WebSocket("ws://localhost:3000/ws");
-
+                const promptInput = document.getElementById('prompt');
+                const context = promptInput.value;
                 const audioPlayer = new Player();
                 audioPlayer.init(24000);
-
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({
+                        type: 'set_context',
+                        context: context
+                    }));
+                };
                 ws.onmessage = event => {
 
                     const data = JSON.parse(event.data);
@@ -154,6 +175,7 @@
                         const base64 = btoa(regularArray);
 
                         ws.send(JSON.stringify({type: 'input_audio_buffer.append', audio: base64}));
+                        
                     }
                 };
 
@@ -169,11 +191,13 @@
                 alert('Error accessing the microphone. Please check your settings and try again.');
             }
         }
-
+        const promptInput = document.getElementById('prompt');
+        promptInput.addEventListener('input', () => {
+            toggleButton.disabled = !promptInput.value.trim();
+        });
         // Button to toggle audio
         const toggleButton = document.getElementById('toggleAudio');
         let isAudioOn = false;
-
         toggleButton.addEventListener('click', async () => {
             if (!isAudioOn) {
                 await startAudio();
