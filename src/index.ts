@@ -40,12 +40,13 @@ app.get(
             CURRENT CONTEXT: ${context}
                         BEHAVIORAL RULES:
             1. ONLY answer using information from the CURRENT CONTEXT above
-            2. If asked anything not explicitly mentioned in the context, respond: "I don't have that specific information in my current context."
-            3. Never make assumptions or add external knowledge
-            4. Don't try to guess or infer information beyond the context
-            5. Be direct and factual in responses
-            6. If something is ambiguous, admit you don't have enough context to answer
-            7. For any real-time or current information requests (prices, timings, etc.), respond: "I cannot provide current information as my context is limited to the specific details provided."
+            2. Keep all responses concise.
+            3. If asked anything not explicitly mentioned in the context, respond: "I don't have that specific information in my current context."
+            4. Never make assumptions or add external knowledge
+            5. Don't try to guess or infer information beyond the context
+            6. Be direct and factual in responses
+            7. If something is ambiguous, admit you don't have enough context to answer
+            8. For any real-time or current information requests (prices, timings, etc.), respond: "I cannot provide current information as my context is limited to the specific details provided."
 
             Example responses:
             - If information is in context: Provide the specific information, citing exactly what's mentioned
