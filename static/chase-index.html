@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chase - See what your money can do</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: white;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            /* max-width: 1200px; */
+            margin: 0 auto;
+            /* padding: 2rem; */
+            display: flex;
+            /* flex-direction: column; */
+            align-items: center;
+            gap: 2rem;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container1 {
+            display: flex;
+            flex-direction: row;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            border: 1px solid black;
+        }
+
+        .ad-card {
+            background: linear-gradient(135deg, #0050b3 0%, #0073e6 100%);
+            border-radius: 2rem;
+            padding: 4rem 2rem;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 70vh;
+
+        }
+
+        .ad-content {
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+            line-height: 1.2;
+            max-width: 500px;
+        }
+
+        .logo {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 120px;
+        }
+
+        .age-restriction {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+
+        .cta-button {
+            background-color: #0073e6;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .cta-button:hover {
+            background-color: #0062c4;
+        }
+
+        .microphone-notice {
+            text-align: center;
+            color: #666;
+            max-width: 600px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* @media (max-width: 768px) {
+            .ad-content {
+                font-size: 2rem;
+            }
+
+            .logo {
+                width: 80px;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .ad-content {
+                font-size: 1.5rem;
+            }
+
+            .logo {
+                width: 60px;
+            }
+        } */
+    </style>
+</head>
+<body>
+    <div class="container1">
+        <div class="ad-card">
+            <div class="ad-content">
+                See what your money can do
+            </div>
+            <div class="age-restriction">18+, UK residents</div>
+        </div>
+        <img class="yy" src="./static/chase-large-02ccc3a3.png" alt="Chase Logo">
+
+       
+    </div>
+    <div class="container">
+        <input type="text" id="prompt" placeholder="Enter Prompt Here" value="you are police officer" hidden>
+        <button id="toggleAudio" class="cta-button">Talk to me</button>
+        <p class="microphone-notice">
+            To interact with this ad, we'll need access to your microphone.<br>
+            Your privacy is important, and we'll only use it for this experience.
+        </p>
+    </div>
+    <script>
+        // Create audio context
+        const BUFFER_SIZE = 4800;
+        class Player {
+            constructor() {
+                this.playbackNode = null;
+            }
+
+            async init(sampleRate) {
+                const audioContext = new AudioContext({ sampleRate });
+                await audioContext.audioWorklet.addModule("/static/audio-playback-worklet.js");
+
+                this.playbackNode = new AudioWorkletNode(audioContext, "audio-playback-worklet");
+                this.playbackNode.connect(audioContext.destination);
+            }
+
+            play(buffer) {
+                if (this.playbackNode) {
+                    this.playbackNode.port.postMessage(buffer);
+                }
+            }
+
+            stop() {
+                if (this.playbackNode) {
+                    this.playbackNode.port.postMessage(null);
+                }
+            }
+        }   
+
+        class Recorder {
+            constructor(onDataAvailable) {
+                this.onDataAvailable = onDataAvailable;
+                this.audioContext = null;
+                this.mediaStream = null;
+                this.mediaStreamSource = null;
+                this.workletNode = null;
+            }
+
+            async start(stream) {
+                try {
+                    if (this.audioContext) {
+                        await this.audioContext.close();
+                    }
+
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+
+                    await this.audioContext.audioWorklet.addModule("/static/audio-processor-worklet.js");
+
+                    this.mediaStream = stream;
+                    this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.mediaStream);
+
+                    this.workletNode = new AudioWorkletNode(this.audioContext, "audio-processor-worklet");
+                    this.workletNode.port.onmessage = event => {
+                        this.onDataAvailable(event.data.buffer);
+                    };
+
+                    this.mediaStreamSource.connect(this.workletNode);
+                    this.workletNode.connect(this.audioContext.destination);
+                } catch (error) {
+                    this.stop();
+                }
+            }
+
+            async stop() {
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                    this.mediaStream = null;
+                }
+
+                if (this.audioContext) {
+                    await this.audioContext.close();
+                    this.audioContext = null;
+                }
+
+                this.mediaStreamSource = null;
+                this.workletNode = null;
+            }
+        }
+
+        // Function to get microphone input and send it to WebSocket
+        async function startAudio() {
+            try {
+
+                // handle output -> speaker stuff
+                const ip = window.location.hostname;
+                const ws = new WebSocket(`ws://${ip}:3000/ws`);
+                const promptInput = document.getElementById('prompt');
+                const context = promptInput.value;
+                const audioPlayer = new Player();
+                audioPlayer.init(24000);
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({
+                        type: 'set_context',
+                        context: context
+                    }));
+                };
+                ws.onmessage = event => {
+
+                    const data = JSON.parse(event.data);
+                    if (data?.type !== 'response.audio.delta') return;
+
+                    const binary = atob(data.delta);
+                    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+                    const pcmData = new Int16Array(bytes.buffer);
+
+                    audioPlayer.play(pcmData);
+                };
+
+                let buffer = new Uint8Array();
+
+                const appendToBuffer = (newData) => {
+                    const newBuffer = new Uint8Array(buffer.length + newData.length);
+                    newBuffer.set(buffer);
+                    newBuffer.set(newData, buffer.length);
+                    buffer = newBuffer;
+                };
+
+                const handleAudioData = (data) => {
+                    const uint8Array = new Uint8Array(data);
+                    appendToBuffer(uint8Array);
+
+                    if (buffer.length >= BUFFER_SIZE) {
+                        const toSend = new Uint8Array(buffer.slice(0, BUFFER_SIZE));
+                        buffer = new Uint8Array(buffer.slice(BUFFER_SIZE));
+
+                        const regularArray = String.fromCharCode(...toSend);
+                        const base64 = btoa(regularArray);
+
+                        ws.send(JSON.stringify({type: 'input_audio_buffer.append', audio: base64}));
+                        
+                    }
+                };
+
+                // handle microphone -> input websocket
+                const audioRecorder = new Recorder(handleAudioData);
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                await audioRecorder.start(stream);
+                
+
+            } catch (error) {
+                console.error('Error accessing the microphone', error);
+                alert('Error accessing the microphone. Please check your settings and try again.');
+            }
+        }
+        const promptInput = document.getElementById('prompt');
+        promptInput.addEventListener('input', () => {
+            toggleButton.disabled = !promptInput.value.trim();
+        });
+        // Button to toggle audio
+        const toggleButton = document.getElementById('toggleAudio');
+        let isAudioOn = false;
+        toggleButton.addEventListener('click', async () => {
+            if (!isAudioOn) {
+                await startAudio();
+                toggleButton.textContent = 'Stop Audio';
+                isAudioOn = true;
+            } else {
+                // audioContext.suspend();
+                toggleButton.textContent = 'Start Audio';
+                isAudioOn = false;
+            }
+        });
+
+    </script>
+</body>
+</html>

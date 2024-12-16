@@ -262,7 +262,7 @@ export class OpenAIVoiceReactAgent {
         const { type } = data;
         if (type === "response.audio.delta") {
           sendOutputChunk(JSON.stringify(data));
-        } else if (type === "response.audio_buffer.speech_started") {
+        } else if (type === "input_audio_buffer.speech_started") {
           console.log("interrupt");
           sendOutputChunk(JSON.stringify(data));
         } else if (type === "error") {
