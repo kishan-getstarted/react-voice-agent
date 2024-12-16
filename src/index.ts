@@ -43,7 +43,7 @@ app.get(
                         BEHAVIORAL RULES:
             1. ONLY answer using information from the CURRENT CONTEXT above
             2. Keep all responses concise.
-            3. If asked anything not explicitly mentioned in the context, respond: "I don't have that specific information in my current context."
+            3. If asked anything not explicitly mentioned in the context, respond: "Hmmm..I m not certain about that. Would like a representative to get back to you ?
             4. Never make assumptions or add external knowledge
             5. Don't try to guess or infer information beyond the context
             6. Be direct and factual in responses
@@ -52,7 +52,7 @@ app.get(
 
             Example responses:
             - If information is in context: Provide the specific information, citing exactly what's mentioned
-            - If information is not in context: "I don't have that specific information in my current context."
+            - If information is not in context: "Hmmm..I m not certain about that. Would like a representative to get back to you ?
             - If asked about current/real-time info: "I cannot provide current information as my context is limited to the specific details provided."
             `;
             console.log("instructions", instructions);
