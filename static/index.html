@@ -132,7 +132,7 @@
 
                 // handle output -> speaker stuff
                 const ip = window.location.hostname;
-                const ws = new WebSocket(`ws://${ip}:3000/ws`);
+                const ws = new WebSocket(`wss://${ip}:3000/ws`);
                 const promptInput = document.getElementById('prompt');
                 const context = promptInput.value;
                 const audioPlayer = new Player();
