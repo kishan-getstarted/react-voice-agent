@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omoda</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #prompt {
+            width: 800px;
+            height: 150px;
+            font-size: 18px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+        }
+        #toggleAudio {
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #toggleAudio:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #toggleAudio:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 20px;">
+        <textarea id="prompt" placeholder="Enter Prompt Here" rows="100" >Overview:
+            This is a fully scripted, on-rails demo of a voice assistant experience. The assistant, named Olivia, interacts with a customer named James Carter to emulate a sales conversation for OMODA's electric vehicles. The assistant follows the provided script precisely and uses natural, professional tones to maintain a polished and engaging interaction.
+            
+            Instructions for the Model:
+            
+            Begin with a warm, professional greeting.
+            
+            Example: "Good morning! Welcome to OMODA. My name is Olivia. How can I assist you today?"
+            When the customer responds, provide an engaging and informative reply based on the script.
+            
+            Respond to the customer's interest in electric and hybrid options by highlighting the OMODA E5 (electric) and OMODA 5 (hybrid) models.
+            Prompt the customer to choose between fully electric and hybrid.
+            If the customer chooses the fully electric option (expected reply):
+            
+            Provide specific details about the OMODA E5, including its features like the 204bhp motor, range capabilities, and fast charging time.
+            Offer to schedule a test drive.
+            When the customer agrees to a test drive (expected reply):
+            
+            Request the following details in order, thanking the customer after each piece of information:
+            Full name
+            Email address
+            Contact number
+            Preferred date and time for the test drive
+            Postcode for records
+            For test drive scheduling:
+            
+            Respond to the provided date and time (e.g., "Next Saturday morning") by checking availability and offering a specific time slot (e.g., "10:00 AM on Saturday"). Confirm the customer's acceptance of this slot.
+            Once the details are collected:
+            
+            Mention a £500 incentive for purchases made after the test drive and gauge the customer's interest.
+            Conclude the interaction:
+            
+            Confirm the test drive booking and inform the customer that a confirmation email will be sent.
+            Ask if the customer has any additional questions about the OMODA E5.
+            Close the conversation warmly, thanking the customer and wishing them a great day.
+            Scripted Dialogue
+            Assistant: Good morning! Welcome to OMODA. My name is Olivia. How can I assist you today?
+            Customer: I'm curious about your electric and hybrid options.
+            Assistant: That's fantastic! We have some exciting models, like the OMODA E5 and OMODA 5, which blend innovative design with cutting-edge technology. Are you looking for something fully electric, like the E5, or perhaps a hybrid?
+            Customer: I'm more interested in the fully electric options.
+            Assistant: Excellent choice. The OMODA E5 has a 204bhp electric motor, a range designed to suit daily commutes and long trips, and charges from 30% to 80% in just 28 minutes. Would you like to schedule a test drive to experience its performance firsthand?
+            Customer: Yes, that sounds great. I'd like to see how it handles.
+            Assistant: Perfect! Let me get a few details we will only use to secure your test drive booking. Could you tell me your full name, please?
+            Customer: Sure, it's James Carter.
+            Assistant: Thank you, James. And what's the best email address to reach you?
+            Customer: jamescarter@email.com.
+            Assistant: Got it. How about a contact number in case we need to confirm any details?
+            Customer: 07123 456789.
+            Assistant: Great, thank you. For the test drive, do you have a preferred date and time?
+            Customer: Next Saturday morning would work for me.
+            Assistant: Let me check our availability.. We have a slot at 10:00 AM on Saturday. Does that work for you?
+            Customer: Yes, that's perfect.
+            Assistant: Excellent. Could you also confirm your postcode for our records?
+            Customer: It's AB12 3CD.
+            Assistant: Thanks, James. We're offering a £500 incentive for customers who go ahead with a purchase after their test drive. Does that sound good to you?
+            Customer: That's a nice bonus! I'll definitely consider it.
+            Assistant: Fantastic! I'll book your test drive and send you a confirmation email with all the details. Is there anything else you'd like to know about the OMODA E5?
+            Customer: No, that covers it for now. Thanks, Olivia.
+            Assistant: You're welcome, James. We're excited to see you for your test drive. Have a great day!
+            
+            Notes for the Demo
+            Ensure the assistant uses a warm and engaging tone throughout.
+            Respond promptly and confidently to each input.
+            If the customer deviates unexpectedly, subtly guide the interaction back to the script while maintaining a natural flow.
+            Simulate pauses (e.g., checking availability) to make the experience feel authentic.</textarea>
+        <button id="toggleAudio">Start Audio</button>
+    </div>
+
+    <script>
+        // Create audio context
+        const BUFFER_SIZE = 4800;
+        class Player {
+            constructor() {
+                this.playbackNode = null;
+            }
+
+            async init(sampleRate) {
+                const audioContext = new AudioContext({ sampleRate });
+                await audioContext.audioWorklet.addModule("/static/audio-playback-worklet.js");
+
+                this.playbackNode = new AudioWorkletNode(audioContext, "audio-playback-worklet");
+                this.playbackNode.connect(audioContext.destination);
+            }
+
+            play(buffer) {
+                if (this.playbackNode) {
+                    this.playbackNode.port.postMessage(buffer);
+                }
+            }
+
+            stop() {
+                if (this.playbackNode) {
+                    this.playbackNode.port.postMessage(null);
+                }
+            }
+        }   
+
+        class Recorder {
+            constructor(onDataAvailable) {
+                this.onDataAvailable = onDataAvailable;
+                this.audioContext = null;
+                this.mediaStream = null;
+                this.mediaStreamSource = null;
+                this.workletNode = null;
+            }
+
+            async start(stream) {
+                try {
+                    if (this.audioContext) {
+                        await this.audioContext.close();
+                    }
+
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+
+                    await this.audioContext.audioWorklet.addModule("/static/audio-processor-worklet.js");
+
+                    this.mediaStream = stream;
+                    this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.mediaStream);
+
+                    this.workletNode = new AudioWorkletNode(this.audioContext, "audio-processor-worklet");
+                    this.workletNode.port.onmessage = event => {
+                        this.onDataAvailable(event.data.buffer);
+                    };
+
+                    this.mediaStreamSource.connect(this.workletNode);
+                    this.workletNode.connect(this.audioContext.destination);
+                } catch (error) {
+                    this.stop();
+                }
+            }
+
+            async stop() {
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                    this.mediaStream = null;
+                }
+
+                if (this.audioContext) {
+                    await this.audioContext.close();
+                    this.audioContext = null;
+                }
+
+                this.mediaStreamSource = null;
+                this.workletNode = null;
+            }
+        }
+
+        // Function to get microphone input and send it to WebSocket
+        async function startAudio() {
+            try {
+
+                // handle output -> speaker stuff
+                const ip = window.location.hostname;
+                const ws = new WebSocket(`wss://${ip}:3000/ws`);
+                const promptInput = document.getElementById('prompt');
+                const context = promptInput.value;
+                const audioPlayer = new Player();
+                audioPlayer.init(24000);
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({
+                        type: 'set_context',
+                        context: context
+                    }));
+                };
+                ws.onmessage = event => {
+
+                    const data = JSON.parse(event.data);
+                    if (data?.type !== 'response.audio.delta') return;
+
+                    const binary = atob(data.delta);
+                    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+                    const pcmData = new Int16Array(bytes.buffer);
+
+                    audioPlayer.play(pcmData);
+                };
+
+                let buffer = new Uint8Array();
+
+                const appendToBuffer = (newData) => {
+                    const newBuffer = new Uint8Array(buffer.length + newData.length);
+                    newBuffer.set(buffer);
+                    newBuffer.set(newData, buffer.length);
+                    buffer = newBuffer;
+                };
+
+                const handleAudioData = (data) => {
+                    const uint8Array = new Uint8Array(data);
+                    appendToBuffer(uint8Array);
+
+                    if (buffer.length >= BUFFER_SIZE) {
+                        const toSend = new Uint8Array(buffer.slice(0, BUFFER_SIZE));
+                        buffer = new Uint8Array(buffer.slice(BUFFER_SIZE));
+
+                        const regularArray = String.fromCharCode(...toSend);
+                        const base64 = btoa(regularArray);
+
+                        ws.send(JSON.stringify({type: 'input_audio_buffer.append', audio: base64}));
+                        
+                    }
+                };
+
+                // handle microphone -> input websocket
+                const audioRecorder = new Recorder(handleAudioData);
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                await audioRecorder.start(stream);
+                
+
+            } catch (error) {
+                console.error('Error accessing the microphone', error);
+                alert('Error accessing the microphone. Please check your settings and try again.');
+            }
+        }
+        const promptInput = document.getElementById('prompt');
+        promptInput.addEventListener('input', () => {
+            toggleButton.disabled = !promptInput.value.trim();
+        });
+        // Button to toggle audio
+        const toggleButton = document.getElementById('toggleAudio');
+        let isAudioOn = false;
+        toggleButton.addEventListener('click', async () => {
+            if (!isAudioOn) {
+                await startAudio();
+                toggleButton.textContent = 'Stop Audio';
+                isAudioOn = true;
+            } else {
+                // audioContext.suspend();
+                toggleButton.textContent = 'Start Audio';
+                isAudioOn = false;
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -16,6 +16,8 @@ const app = new Hono();
 const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
 app.use("/", serveStatic({ path: "./static/index.html" }));
+app.use("/omoda", serveStatic({ path: "./static/omoda-index.html" }));
+
 app.use("/chase", serveStatic({ path: "./static/chase-index.html" }));
 
 app.use("/static/*", serveStatic({ root: "./" }));
