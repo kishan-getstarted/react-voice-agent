@@ -36,7 +36,7 @@ app.get(
       (ws.raw as WebSocket).on("message", async (message) => {
         try {
           const data = JSON.parse(message.toString());
-          if (data.type === "set_context") {
+          if (data.type === "set_context" && data.client !== "omoda") {
             context = data.context;
             console.log("kishan", context);
             // Update agent instructions with the new context

@@ -204,6 +204,7 @@
                 ws.onopen = () => {
                     ws.send(JSON.stringify({
                         type: 'set_context',
+                        client: 'omoda',
                         context: context
                     }));
                 };
